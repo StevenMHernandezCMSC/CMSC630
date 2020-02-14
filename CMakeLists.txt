@@ -6,10 +6,15 @@ project(CMSC630)
 
 find_package(OpenCV REQUIRED)
 
-if(CMAKE_VERSION VERSION_LESS "2.8.11")
+set(Boost_USE_MULTITHREADED TRUE)
+find_package(Boost 1.72 REQUIRED COMPONENTS filesystem regex)
+
+#if(CMAKE_VERSION VERSION_LESS "2.8.11")
+    include_directories(${Boost_INCLUDE_DIRS})
     include_directories(${OpenCV_INCLUDE_DIRS})
-endif()
+#endif()
 
 add_executable(cmsc603 src/main.cpp)
 
 target_link_libraries(cmsc603 ${OpenCV_LIBS})
+target_link_libraries(cmsc603 ${Boost_LIBRARIES})

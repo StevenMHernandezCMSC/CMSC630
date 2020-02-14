@@ -1,16 +1,25 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/core/ocl.hpp"
-#include "filters/noise_salt_and_pepper.cpp"
-#include "filters/noise_gaussian.cpp"
-#include "filters/grayscale.cpp"
-#include "filters/kernel_linear.cpp"
-#include "histograms/create_histogram.cpp"
+#include "filter/noise_salt_and_pepper.cpp"
+#include "filter/noise_gaussian.cpp"
+#include "filter/grayscale.cpp"
+#include "filter/kernel_linear.cpp"
+#include "histogram/create_histogram.cpp"
+#include "dataset/get_class_names.cpp"
 
 using namespace std::chrono;
 
 using namespace cv;
 
 int main(int argc, char **argv) {
+    std::string *classes;
+    int num_classes = get_class_names(&classes, "/Users/steven/projects/school/MASTERS/CMSC630/data/raw/Cancerous cell smears/");
+
+    for (int i = 0; i < num_classes; i++) {
+        printf("Class #%d name: %s\n", i, classes[i].c_str());
+    }
+
+
     // TODO: Load ALL images
     // Load raw image
     Mat src, dst;
