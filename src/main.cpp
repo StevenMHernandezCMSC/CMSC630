@@ -4,6 +4,7 @@
 #include "filter/noise_gaussian.cpp"
 #include "filter/grayscale.cpp"
 #include "filter/kernel_linear.cpp"
+#include "filter/uniform_quantization.cpp"
 #include "histogram/create_histogram.cpp"
 #include "histogram/apply_histogram_equalization.cpp"
 #include "histogram/create_histogram_mat.cpp"
@@ -26,7 +27,7 @@ int main(int argc, char **argv) {
     // TODO: request parameter from user
     noise_salt_and_pepper(&src, 0.01);
     // TODO: request parameter from user
-    noise_gaussian(&src, 5);
+    noise_gaussian(&src, 50);
 
     // Grayscale
     grayscale(&src);
@@ -42,6 +43,10 @@ int main(int argc, char **argv) {
     max_bucket = apply_histogram_equalization(&src, &histogram_buckets);
     create_histogram_mat(&histogram, &histogram_buckets, max_bucket);
     imwrite(argv[3], histogram);
+
+    // Uniform Quantization
+    // TODO: request parameter from user
+    uniform_quantization(&src, 4);
 
     // Linear Filter
     double **kernel;
