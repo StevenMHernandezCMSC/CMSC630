@@ -26,5 +26,6 @@ void noise_salt_and_pepper(Mat *src, double noise_probability) {
         }
     }
 
+    src->release();
     *src = dst.clone();
 }

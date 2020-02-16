@@ -23,5 +23,6 @@ void noise_gaussian(Mat *src, double standard_deviation) {
         }
     }
 
+    src->release();
     *src = dst.clone();
 }

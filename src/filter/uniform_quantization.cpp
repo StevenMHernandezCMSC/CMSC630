@@ -7,5 +7,6 @@ void uniform_quantization(Mat *src, int step_size) {
         }
     }
 
+    src->release();
     *src = dst.clone();
 }

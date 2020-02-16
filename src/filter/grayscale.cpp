@@ -15,5 +15,6 @@ void grayscale(Mat *src) {
         }
     }
 
+    src->release();
     *src = dst.clone();
 }

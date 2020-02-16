@@ -7,8 +7,8 @@ int apply_histogram_equalization(Mat *src, int **histogram_buckets) {
     double p[256];
     double sum = 0;
 
-    int *new_histogram_buckets = static_cast<int *>(malloc(sizeof(int) * 256));
-    int *new_color = static_cast<int *>(malloc(sizeof(int) * 256));
+    int *new_histogram_buckets = new int[256];
+    int *new_color = new int[256];
     for (int i = 0; i < 256; i++) {
         new_histogram_buckets[i] = 0;
         new_color[i] = 0;
@@ -25,6 +25,7 @@ int apply_histogram_equalization(Mat *src, int **histogram_buckets) {
         max_bucket = max(max_bucket, new_histogram_buckets[(int) floor(256 * sum)]);
     }
 
+    delete *histogram_buckets;
     *histogram_buckets = new_histogram_buckets;
 
     for (int i = 0; i < src->rows; i++) {
@@ -32,6 +33,8 @@ int apply_histogram_equalization(Mat *src, int **histogram_buckets) {
             dst.at<uint8_t>(i, j) = new_color[src->at<uint8_t>(i, j)];
         }
     }
+
+    delete[] new_color;
 
     *src = dst.clone();
 

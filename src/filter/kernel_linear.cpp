@@ -6,10 +6,10 @@ int request_filter_values(double ***kernel) {
     // TODO: request kernel-size from user.
     int kernel_size = 3;
 
-    *kernel = static_cast<double **>(malloc(sizeof(double *) * kernel_size));
+    *kernel = new double*[kernel_size];
 
     for (int i = 0; i < kernel_size; i++) {
-        (*kernel)[i] = static_cast<double *>(malloc(sizeof(double) * kernel_size));
+        (*kernel)[i] = new double[kernel_size];
         for (int j = 0; j < kernel_size; j++) {
             (*kernel)[i][j] = 1.0 / (double) (kernel_size * kernel_size);
         }
@@ -18,6 +18,13 @@ int request_filter_values(double ***kernel) {
     // TODO: request from user
 
     return kernel_size;
+}
+
+void free_requested_filter_values(double ***kernel, int kernel_size) {
+    for (int i = 0; i < kernel_size; i++) {
+        delete (*kernel)[i];
+    }
+    delete *kernel;
 }
 
 uint8_t _apply_kernel(Mat *src, double **kernel, int kernel_size, int i, int j) {
@@ -39,5 +46,6 @@ void kernel_linear(Mat *src, double **kernel, int kernel_size) {
         }
     }
 
+    src->release();
     *src = dst.clone();
 }

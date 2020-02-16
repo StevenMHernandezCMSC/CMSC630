@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
 
     // TODO: Load ALL images
     // Load raw image
-    Mat src, dst;
+    Mat src;
     src = imread(argv[2]);
 
     // Add noise
@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
 
     // Create Histograms
     Mat histogram;
-    int *histogram_buckets = static_cast<int *>(malloc(sizeof(int) * 256));
+    int *histogram_buckets = new int[256];
     int max_bucket = create_histogram(&src, &histogram_buckets);
     create_histogram_mat(&histogram, &histogram_buckets, max_bucket);
     imwrite(argv[4], histogram);
@@ -43,6 +43,7 @@ int main(int argc, char **argv) {
     max_bucket = apply_histogram_equalization(&src, &histogram_buckets);
     create_histogram_mat(&histogram, &histogram_buckets, max_bucket);
     imwrite(argv[4], histogram);
+    delete[] histogram_buckets;
 
     // Uniform Quantization
     // TODO: request parameter from user
@@ -52,9 +53,12 @@ int main(int argc, char **argv) {
     double **kernel;
     int kernel_size = request_filter_values(&kernel);
     kernel_linear(&src, kernel, kernel_size);
+    free_requested_filter_values(&kernel, kernel_size);
 
     // Save final image
     imwrite(argv[3], src);
+
+    src.release();
 
     return 0;
 }
