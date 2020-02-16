@@ -16,9 +16,9 @@ void noise_gaussian(Mat *src, double standard_deviation) {
     for (int i = 0; i < src->rows; i++) {
         for (int j = 0; j < src->cols; j++) {
             Pixel p = src->at<Pixel>(i, j);
-            p.x += dis(gen);
-            p.y += dis(gen);
-            p.z += dis(gen);
+            p.x = max(0, min(255, (int) (p.x + dis(gen))));
+            p.y = max(0, min(255, (int) (p.y + dis(gen))));
+            p.z = max(0, min(255, (int) (p.z + dis(gen))));
             dst.at<Pixel>(i, j) = p;
         }
     }

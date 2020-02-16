@@ -1,4 +1,9 @@
-void create_histogram_mat(Mat *dst, int **buckets, int max_bucket_count) {
+void create_histogram_mat(Mat *dst, int **buckets) {
+    int max_bucket_count = 0;
+    for (int i = 0; i < 256; i++) {
+        max_bucket_count = max(max_bucket_count, (*buckets)[i]);
+    }
+
     // Create histogram output image matrix
     int image_height = min(255, max_bucket_count);
     *dst = Mat::zeros(image_height, 255, CV_8U);

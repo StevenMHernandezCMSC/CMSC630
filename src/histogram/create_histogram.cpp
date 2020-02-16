@@ -1,12 +1,11 @@
 #include "opencv2/core/ocl.hpp"
 #include <cstdio>
-#include <iostream>
 
 using namespace std::chrono;
 
 using namespace cv;
 
-int create_histogram(Mat *src, int **buckets) {
+void create_histogram(Mat *src, int **buckets) {
     for (int i = 0; i < 256; i++) {
         (*buckets)[i] = 0;
     }
@@ -18,12 +17,4 @@ int create_histogram(Mat *src, int **buckets) {
             (*buckets)[bucket_index]++;
         }
     }
-
-    // Determine largest bucket
-    int max_bucket_count = 1;
-    for (int i = 0; i < 256; i++) {
-        max_bucket_count = max(max_bucket_count, (*buckets)[i]);
-    }
-
-    return max_bucket_count;
 }

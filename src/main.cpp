@@ -38,46 +38,70 @@ int main(int argc, char **argv) {
         int num_images = get_images_by_class(&images, argv[1], classes[i]);
         printf("Class [%d/%d]: %s\n", i+1, num_classes, classes[i].c_str());
 
+        int *histogram_bucket_sums = new int[256];
+        for (int k = 0; k < 256; k++) {
+            histogram_bucket_sums[k] = 0;
+        }
+
         // Load each image per class
         for (int j = 0; j < num_images; j++) {
+
+            // Create directory for
+            boost::filesystem::path dir(output_directory_name + images[j] + "/");
+            boost::filesystem::create_directory(dir);
+
             // Load raw image
             Mat src;
-            src = imread(input_directory_name + images[j]);
             printf("Loading image [%d/%d]: %s\n", j+1, num_images, (input_directory_name + images[j]).c_str());
+            src = imread(input_directory_name + images[j]);
+            imwrite(output_directory_name + images[j] + "/0.original.BMP" , src);
 
             // Add noise
             noise_salt_and_pepper(&src, salt_and_pepper_probability);
+            imwrite(output_directory_name + images[j] + "/1.salt_and_pepper_noise.BMP" , src);
+
             noise_gaussian(&src, gassian_noise_standard_deviation);
+            imwrite(output_directory_name + images[j] + "/2.gaussian_noise.BMP" , src);
 
             // Grayscale
             grayscale(&src);
+            imwrite(output_directory_name + images[j] + "/3.grayscale.BMP" , src);
 
             // Create Histograms
             Mat histogram1;
-            int max_bucket = create_histogram(&src, &histogram_buckets);
-            create_histogram_mat(&histogram1, &histogram_buckets, max_bucket);
-            imwrite(output_directory_name + images[j] + ".histogram1.bmp", histogram1);
+            create_histogram(&src, &histogram_buckets);
+            create_histogram_mat(&histogram1, &histogram_buckets);
+            imwrite(output_directory_name + images[j] + "/histogram.3.grayscale.bmp", histogram1);
             histogram1.release();
+            for (int k = 0; k < 256; k++) {
+                histogram_bucket_sums[k] += histogram_buckets[k];
+            }
 
             // Histogram Equalization
             Mat histogram2;
-            max_bucket = apply_histogram_equalization(&src, &histogram_buckets);
-            create_histogram_mat(&histogram2, &histogram_buckets, max_bucket);
-            imwrite(output_directory_name + images[j] + ".histogram2.bmp", histogram2);
+            apply_histogram_equalization(&src, &histogram_buckets);
+            imwrite(output_directory_name + images[j] + "/4.histogram_equalization.BMP" , src);
+            create_histogram_mat(&histogram2, &histogram_buckets);
+            imwrite(output_directory_name + images[j] + "/histogram.4.histogram_equalization.bmp", histogram2);
             histogram2.release();
 
             // Uniform Quantization
             uniform_quantization(&src, quantization_step_size);
+            imwrite(output_directory_name + images[j] + "/5.uniform_quantization.BMP" , src);
 
             // Linear Filter
             kernel_linear(&src, kernel, kernel_size);
-
-            // Save final image
-            imwrite(output_directory_name + images[j], src);
+            imwrite(output_directory_name + images[j] + "/6.linear_filter.BMP" , src);
 
             src.release();
         }
 
+        // Histogram Equalization
+        Mat histogram2;
+        create_histogram_mat(&histogram2, &histogram_bucket_sums);
+        imwrite(output_directory_name + classes[i] + ".AVERAGED_histogram.bmp", histogram2);
+        histogram2.release();
+        delete[] histogram_bucket_sums;
         delete[] images;
     }
 
