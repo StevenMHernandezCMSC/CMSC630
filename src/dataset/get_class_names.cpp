@@ -18,13 +18,14 @@ int get_class_names(std::string **classes, std::string directory_name) {
         class_names.insert({what[1], 1});
     }
 
-    *classes = static_cast<std::string *>(malloc(sizeof(std::string) * class_names.size()));
-
+    int num_classes = class_names.size();
+    *classes = new std::string[num_classes];
 
     int i = 0;
     for (const auto &n : class_names) {
-        (*classes)[i++] = n.first;
+        (*classes)[i] = n.first;
+        i++;
     }
 
-    return class_names.size();
+    return num_classes;
 }

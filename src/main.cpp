@@ -16,12 +16,12 @@ using namespace cv;
 
 int main(int argc, char **argv) {
     std::string *classes;
-//    int num_classes = get_class_names(&classes, "/Users/steven/projects/school/MASTERS/CMSC630/data/raw/Cancerous cell smears/");
+    int num_classes = get_class_names(&classes, argv[1]);
 
     // TODO: Load ALL images
     // Load raw image
     Mat src, dst;
-    src = imread(argv[1]);
+    src = imread(argv[2]);
 
     // Add noise
     // TODO: request parameter from user
@@ -37,12 +37,12 @@ int main(int argc, char **argv) {
     int *histogram_buckets = static_cast<int *>(malloc(sizeof(int) * 256));
     int max_bucket = create_histogram(&src, &histogram_buckets);
     create_histogram_mat(&histogram, &histogram_buckets, max_bucket);
-    imwrite(argv[3], histogram);
+    imwrite(argv[4], histogram);
 
     // Histogram Equalization
     max_bucket = apply_histogram_equalization(&src, &histogram_buckets);
     create_histogram_mat(&histogram, &histogram_buckets, max_bucket);
-    imwrite(argv[3], histogram);
+    imwrite(argv[4], histogram);
 
     // Uniform Quantization
     // TODO: request parameter from user
@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
     kernel_linear(&src, kernel, kernel_size);
 
     // Save final image
-    imwrite(argv[2], src);
+    imwrite(argv[3], src);
 
     return 0;
 }

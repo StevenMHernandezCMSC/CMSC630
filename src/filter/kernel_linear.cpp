@@ -11,13 +11,11 @@ int request_filter_values(double ***kernel) {
     for (int i = 0; i < kernel_size; i++) {
         (*kernel)[i] = static_cast<double *>(malloc(sizeof(double) * kernel_size));
         for (int j = 0; j < kernel_size; j++) {
-            (*kernel)[i][j] = 0.0;
+            (*kernel)[i][j] = 1.0 / (double) (kernel_size * kernel_size);
         }
     }
 
     // TODO: request from user
-    (*kernel)[0][0] = 0.5;
-    (*kernel)[2][0] = -0.5;
 
     return kernel_size;
 }
