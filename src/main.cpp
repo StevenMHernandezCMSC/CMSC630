@@ -9,56 +9,72 @@
 #include "histogram/apply_histogram_equalization.cpp"
 #include "histogram/create_histogram_mat.cpp"
 #include "dataset/get_class_names.cpp"
+#include "dataset/get_images_by_class.cpp"
 
 using namespace std::chrono;
 
 using namespace cv;
 
+int *histogram_buckets = new int[256];
+
 int main(int argc, char **argv) {
     std::string *classes;
-    int num_classes = get_class_names(&classes, argv[1]);
+    std::string input_directory_name = argv[1];
+    std::string output_directory_name = argv[2];
+    int num_classes = get_class_names(&classes, input_directory_name);
 
-    // TODO: Load ALL images
-    // Load raw image
-    Mat src;
-    src = imread(argv[2]);
-
-    // Add noise
-    // TODO: request parameter from user
-    noise_salt_and_pepper(&src, 0.01);
-    // TODO: request parameter from user
-    noise_gaussian(&src, 50);
-
-    // Grayscale
-    grayscale(&src);
-
-    // Create Histograms
-    Mat histogram;
-    int *histogram_buckets = new int[256];
-    int max_bucket = create_histogram(&src, &histogram_buckets);
-    create_histogram_mat(&histogram, &histogram_buckets, max_bucket);
-    imwrite(argv[4], histogram);
-
-    // Histogram Equalization
-    max_bucket = apply_histogram_equalization(&src, &histogram_buckets);
-    create_histogram_mat(&histogram, &histogram_buckets, max_bucket);
-    imwrite(argv[4], histogram);
-    delete[] histogram_buckets;
-
-    // Uniform Quantization
-    // TODO: request parameter from user
-    uniform_quantization(&src, 4);
-
-    // Linear Filter
+    // TODO: Get user requested parameters
+    double salt_and_pepper_probability = 0.01;
+    double gassian_noise_standard_deviation = 5.0;
     double **kernel;
     int kernel_size = request_filter_values(&kernel);
-    kernel_linear(&src, kernel, kernel_size);
-    free_requested_filter_values(&kernel, kernel_size);
+    int quantization_step_size = 4;
 
-    // Save final image
-    imwrite(argv[3], src);
+    // Load each class individually
+    for (int i = 0; i < num_classes; i++) {
+        std::string *images;
+        int num_images = get_images_by_class(&images, argv[1], classes[i]);
+        printf("Class: %s\n", classes[i].c_str());
 
-    src.release();
+        // Load each image per class
+        for (int j = 0; j < num_images; j++) {
+            // Load raw image
+            Mat src;
+            src = imread(input_directory_name + images[j]);
+            printf("Loading image: %s\n", (input_directory_name + images[j]).c_str());
+
+            // Add noise
+            noise_salt_and_pepper(&src, salt_and_pepper_probability);
+            noise_gaussian(&src, gassian_noise_standard_deviation);
+
+            // Grayscale
+            grayscale(&src);
+
+            // Create Histograms
+            Mat histogram;
+            int max_bucket = create_histogram(&src, &histogram_buckets);
+            create_histogram_mat(&histogram, &histogram_buckets, max_bucket);
+            imwrite(output_directory_name + images[j] + ".histogram.bmp", histogram);
+
+//            // Histogram Equalization
+//            max_bucket = apply_histogram_equalization(&src, &histogram_buckets);
+//            create_histogram_mat(&histogram, &histogram_buckets, max_bucket);
+//            imwrite(output_directory_name + images[j] + ".histogram.bmp", histogram);
+
+            // Uniform Quantization
+            uniform_quantization(&src, quantization_step_size);
+
+            // Linear Filter
+            kernel_linear(&src, kernel, kernel_size);
+
+            // Save final image
+            imwrite(output_directory_name + images[j], src);
+
+            src.release();
+        }
+
+        delete[] images;
+    }
 
     return 0;
 }

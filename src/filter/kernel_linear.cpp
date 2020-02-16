@@ -15,16 +15,9 @@ int request_filter_values(double ***kernel) {
         }
     }
 
-    // TODO: request from user
+    // TODO: request values from user
 
     return kernel_size;
-}
-
-void free_requested_filter_values(double ***kernel, int kernel_size) {
-    for (int i = 0; i < kernel_size; i++) {
-        delete (*kernel)[i];
-    }
-    delete *kernel;
 }
 
 uint8_t _apply_kernel(Mat *src, double **kernel, int kernel_size, int i, int j) {

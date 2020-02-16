@@ -1,3 +1,4 @@
+int *new_color = new int[256];
 
 // REFERENCE: https://www.math.uci.edu/icamp/courses/math77c/demos/hist_eq.pdf
 int apply_histogram_equalization(Mat *src, int **histogram_buckets) {
@@ -8,7 +9,6 @@ int apply_histogram_equalization(Mat *src, int **histogram_buckets) {
     double sum = 0;
 
     int *new_histogram_buckets = new int[256];
-    int *new_color = new int[256];
     for (int i = 0; i < 256; i++) {
         new_histogram_buckets[i] = 0;
         new_color[i] = 0;
@@ -34,8 +34,7 @@ int apply_histogram_equalization(Mat *src, int **histogram_buckets) {
         }
     }
 
-    delete[] new_color;
-
+    src->release();
     *src = dst.clone();
 
     return max_bucket;
