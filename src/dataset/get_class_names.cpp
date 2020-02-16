@@ -13,9 +13,9 @@ int get_class_names(std::string **classes, std::string directory_name) {
     for (const auto &entry : fs::directory_iterator(directory_name)) {
         std::string text = entry.path().c_str();
         boost::smatch what;
-        regex_search(text, what, pattern);
-
-        class_names.insert({what[1], 1});
+        if (regex_search(text, what, pattern)) {
+            class_names.insert({what[1], 1});
+        }
     }
 
     int num_classes = class_names.size();

@@ -18,6 +18,8 @@ using namespace cv;
 int *histogram_buckets = new int[256];
 
 int main(int argc, char **argv) {
+    auto EVENT_START_program = std::chrono::system_clock::now();
+
     std::string *classes;
     std::string input_directory_name = argv[1];
     std::string output_directory_name = argv[2];
@@ -34,14 +36,14 @@ int main(int argc, char **argv) {
     for (int i = 0; i < num_classes; i++) {
         std::string *images;
         int num_images = get_images_by_class(&images, argv[1], classes[i]);
-        printf("Class: %s\n", classes[i].c_str());
+        printf("Class [%d/%d]: %s\n", i+1, num_classes, classes[i].c_str());
 
         // Load each image per class
         for (int j = 0; j < num_images; j++) {
             // Load raw image
             Mat src;
             src = imread(input_directory_name + images[j]);
-            printf("Loading image: %s\n", (input_directory_name + images[j]).c_str());
+            printf("Loading image [%d/%d]: %s\n", j+1, num_images, (input_directory_name + images[j]).c_str());
 
             // Add noise
             noise_salt_and_pepper(&src, salt_and_pepper_probability);
@@ -51,15 +53,18 @@ int main(int argc, char **argv) {
             grayscale(&src);
 
             // Create Histograms
-            Mat histogram;
+            Mat histogram1;
             int max_bucket = create_histogram(&src, &histogram_buckets);
-            create_histogram_mat(&histogram, &histogram_buckets, max_bucket);
-            imwrite(output_directory_name + images[j] + ".histogram.bmp", histogram);
+            create_histogram_mat(&histogram1, &histogram_buckets, max_bucket);
+            imwrite(output_directory_name + images[j] + ".histogram1.bmp", histogram1);
+            histogram1.release();
 
-//            // Histogram Equalization
-//            max_bucket = apply_histogram_equalization(&src, &histogram_buckets);
-//            create_histogram_mat(&histogram, &histogram_buckets, max_bucket);
-//            imwrite(output_directory_name + images[j] + ".histogram.bmp", histogram);
+            // Histogram Equalization
+            Mat histogram2;
+            max_bucket = apply_histogram_equalization(&src, &histogram_buckets);
+            create_histogram_mat(&histogram2, &histogram_buckets, max_bucket);
+            imwrite(output_directory_name + images[j] + ".histogram2.bmp", histogram2);
+            histogram2.release();
 
             // Uniform Quantization
             uniform_quantization(&src, quantization_step_size);
@@ -75,6 +80,12 @@ int main(int argc, char **argv) {
 
         delete[] images;
     }
+
+
+    auto EVENT_END_program = std::chrono::system_clock::now();
+    std::chrono::duration<double> diff = EVENT_END_program - EVENT_START_program;
+
+    printf("[EVENT_PROGRAM]:%lf", diff);
 
     return 0;
 }

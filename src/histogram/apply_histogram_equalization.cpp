@@ -18,14 +18,15 @@ int apply_histogram_equalization(Mat *src, int **histogram_buckets) {
 
     for (int i = 0; i < 256; i++) {
         p[i] = (double) (*histogram_buckets)[i] / (double) num_pixels;
-        sum += p[i];
 
         new_histogram_buckets[(int) floor(256 * sum)] += (*histogram_buckets)[i];
         new_color[i] = (int) floor(256 * sum);
         max_bucket = max(max_bucket, new_histogram_buckets[(int) floor(256 * sum)]);
+
+        sum += p[i];
     }
 
-    delete *histogram_buckets;
+    delete[] (*histogram_buckets);
     *histogram_buckets = new_histogram_buckets;
 
     for (int i = 0; i < src->rows; i++) {

@@ -8,7 +8,7 @@ namespace fs = boost::filesystem;
 
 int get_images_by_class(std::string **files, std::string directory_name, std::string class_name) {
     std::unordered_map<std::string, int> file_names = {};
-    boost::regex pattern(class_name.append("[0-9]+.BMP"));
+    boost::regex pattern(class_name +"[0-9]+.BMP");
 
     for (const auto &entry : fs::directory_iterator(directory_name)) {
         std::string text = entry.path().c_str();
