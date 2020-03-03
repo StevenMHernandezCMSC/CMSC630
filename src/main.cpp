@@ -4,6 +4,7 @@
 #include "filter/noise_gaussian.cpp"
 #include "filter/grayscale.cpp"
 #include "filter/kernel_linear.cpp"
+#include "filter/median_filter.cpp"
 #include "filter/uniform_quantization.cpp"
 #include "histogram/create_histogram.cpp"
 #include "histogram/apply_histogram_equalization.cpp"
@@ -19,8 +20,8 @@ int *histogram_buckets = new int[256];
 
 int main(int argc, char **argv) {
     auto EVENT_START_program = std::chrono::system_clock::now();
-    double total_processing_times_per_process[8];
-    for (int l = 0; l < 8; l++) {
+    double total_processing_times_per_process[9];
+    for (int l = 0; l < 9; l++) {
         total_processing_times_per_process[l] = 0.0;
     }
     auto process_start = std::chrono::system_clock::now();
@@ -121,6 +122,13 @@ int main(int argc, char **argv) {
             process_start = std::chrono::system_clock::now();
             kernel_linear(&src, kernel, kernel_size);
             imwrite(output_directory_name + images[j] + "/6.linear_filter.BMP" , src);
+            process_end = std::chrono::system_clock::now();
+            total_processing_times_per_process[7] += (process_end - process_start).count();
+
+            // Median Filter
+            process_start = std::chrono::system_clock::now();
+            median_filter(&src, kernel, kernel_size);
+            imwrite(output_directory_name + images[j] + "/7.linear_filter.BMP" , src);
             process_end = std::chrono::system_clock::now();
             total_processing_times_per_process[7] += (process_end - process_start).count();
 
