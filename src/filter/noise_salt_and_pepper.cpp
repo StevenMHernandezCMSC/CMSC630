@@ -3,8 +3,6 @@
 
 using namespace cv;
 
-typedef Point3_<uint8_t> Pixel;
-
 
 void noise_salt_and_pepper(Mat *src, double noise_probability) {
     // SOURCE: https://en.cppreference.com/w/cpp/numeric/random/uniform_real_distribution
@@ -17,10 +15,10 @@ void noise_salt_and_pepper(Mat *src, double noise_probability) {
     for (int i = 0; i < src->rows; i++) {
         for (int j = 0; j < src->cols; j++) {
             if (dis(gen) < noise_probability) {
-                if (dis(gen)  < 0.5) {
-                    dst.at<Pixel>(i, j) = Pixel(0, 0, 0);
+                if (dis(gen) < 0.5) {
+                    dst.at<u_int8_t>(i, j) = 0;
                 } else {
-                    dst.at<Pixel>(i, j) = Pixel(255, 255, 255);
+                    dst.at<u_int8_t>(i, j) = 255;
                 }
             }
         }

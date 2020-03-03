@@ -65,24 +65,24 @@ int main(int argc, char **argv) {
             process_end = std::chrono::system_clock::now();
             total_processing_times_per_process[0] += (process_end - process_start).count();
 
+            // Grayscale
+            process_start = std::chrono::system_clock::now();
+            grayscale(&src);
+            imwrite(output_directory_name + images[j] + "/1.grayscale.BMP" , src);
+            process_end = std::chrono::system_clock::now();
+            total_processing_times_per_process[1] += (process_end - process_start).count();
+
             // Add Salt and Pepper noise
             process_start = std::chrono::system_clock::now();
             noise_salt_and_pepper(&src, salt_and_pepper_probability);
-            imwrite(output_directory_name + images[j] + "/1.salt_and_pepper_noise.BMP" , src);
+            imwrite(output_directory_name + images[j] + "/2.salt_and_pepper_noise.BMP" , src);
             process_end = std::chrono::system_clock::now();
-            total_processing_times_per_process[1] += (process_end - process_start).count();
+            total_processing_times_per_process[2] += (process_end - process_start).count();
 
             // Add Gaussian noise
             process_start = std::chrono::system_clock::now();
             noise_gaussian(&src, gassian_noise_standard_deviation);
-            imwrite(output_directory_name + images[j] + "/2.gaussian_noise.BMP" , src);
-            process_end = std::chrono::system_clock::now();
-            total_processing_times_per_process[2] += (process_end - process_start).count();
-
-            // Grayscale
-            process_start = std::chrono::system_clock::now();
-            grayscale(&src);
-            imwrite(output_directory_name + images[j] + "/3.grayscale.BMP" , src);
+            imwrite(output_directory_name + images[j] + "/3.gaussian_noise.BMP" , src);
             process_end = std::chrono::system_clock::now();
             total_processing_times_per_process[3] += (process_end - process_start).count();
 
@@ -91,7 +91,7 @@ int main(int argc, char **argv) {
             Mat histogram1;
             create_histogram(&src, &histogram_buckets);
             create_histogram_mat(&histogram1, &histogram_buckets);
-            imwrite(output_directory_name + images[j] + "/histogram.3.grayscale.bmp", histogram1);
+            imwrite(output_directory_name + images[j] + "/histogram.3.gaussian_noise.bmp", histogram1);
             histogram1.release();
             for (int k = 0; k < 256; k++) {
                 histogram_bucket_sums[k] += histogram_buckets[k];
