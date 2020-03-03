@@ -128,7 +128,7 @@ int main(int argc, char **argv) {
             // Median Filter
             process_start = std::chrono::system_clock::now();
             median_filter(&src, kernel, kernel_size);
-            imwrite(output_directory_name + images[j] + "/7.linear_filter.BMP" , src);
+            imwrite(output_directory_name + images[j] + "/7.median_filter.BMP" , src);
             process_end = std::chrono::system_clock::now();
             total_processing_times_per_process[7] += (process_end - process_start).count();
 
