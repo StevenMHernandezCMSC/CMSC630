@@ -19,6 +19,13 @@ int *histogram_buckets = new int[256];
 
 int main(int argc, char **argv) {
     auto EVENT_START_program = std::chrono::system_clock::now();
+    double total_processing_times_per_process[8];
+    for (int l = 0; l < 8; l++) {
+        total_processing_times_per_process[l] = 0.0;
+    }
+    auto process_start = std::chrono::system_clock::now();
+    auto process_end = std::chrono::system_clock::now();
+
 
     std::string *classes;
     std::string input_directory_name = argv[1];
@@ -45,29 +52,42 @@ int main(int argc, char **argv) {
 
         // Load each image per class
         for (int j = 0; j < num_images; j++) {
-
             // Create directory for
             boost::filesystem::path dir(output_directory_name + images[j] + "/");
             boost::filesystem::create_directory(dir);
 
             // Load raw image
+            process_start = std::chrono::system_clock::now();
             Mat src;
             printf("Loading image [%d/%d]: %s\n", j+1, num_images, (input_directory_name + images[j]).c_str());
             src = imread(input_directory_name + images[j]);
             imwrite(output_directory_name + images[j] + "/0.original.BMP" , src);
+            process_end = std::chrono::system_clock::now();
+            total_processing_times_per_process[0] += (process_end - process_start).count();
 
-            // Add noise
+            // Add Salt and Pepper noise
+            process_start = std::chrono::system_clock::now();
             noise_salt_and_pepper(&src, salt_and_pepper_probability);
             imwrite(output_directory_name + images[j] + "/1.salt_and_pepper_noise.BMP" , src);
+            process_end = std::chrono::system_clock::now();
+            total_processing_times_per_process[1] += (process_end - process_start).count();
 
+            // Add Gaussian noise
+            process_start = std::chrono::system_clock::now();
             noise_gaussian(&src, gassian_noise_standard_deviation);
             imwrite(output_directory_name + images[j] + "/2.gaussian_noise.BMP" , src);
+            process_end = std::chrono::system_clock::now();
+            total_processing_times_per_process[2] += (process_end - process_start).count();
 
             // Grayscale
+            process_start = std::chrono::system_clock::now();
             grayscale(&src);
             imwrite(output_directory_name + images[j] + "/3.grayscale.BMP" , src);
+            process_end = std::chrono::system_clock::now();
+            total_processing_times_per_process[3] += (process_end - process_start).count();
 
             // Create Histograms
+            process_start = std::chrono::system_clock::now();
             Mat histogram1;
             create_histogram(&src, &histogram_buckets);
             create_histogram_mat(&histogram1, &histogram_buckets);
@@ -76,22 +96,33 @@ int main(int argc, char **argv) {
             for (int k = 0; k < 256; k++) {
                 histogram_bucket_sums[k] += histogram_buckets[k];
             }
+            process_end = std::chrono::system_clock::now();
+            total_processing_times_per_process[4] += (process_end - process_start).count();
 
             // Histogram Equalization
+            process_start = std::chrono::system_clock::now();
             Mat histogram2;
             apply_histogram_equalization(&src, &histogram_buckets);
             imwrite(output_directory_name + images[j] + "/4.histogram_equalization.BMP" , src);
             create_histogram_mat(&histogram2, &histogram_buckets);
             imwrite(output_directory_name + images[j] + "/histogram.4.histogram_equalization.bmp", histogram2);
             histogram2.release();
+            process_end = std::chrono::system_clock::now();
+            total_processing_times_per_process[5] += (process_end - process_start).count();
 
             // Uniform Quantization
+            process_start = std::chrono::system_clock::now();
             uniform_quantization(&src, quantization_step_size);
             imwrite(output_directory_name + images[j] + "/5.uniform_quantization.BMP" , src);
+            process_end = std::chrono::system_clock::now();
+            total_processing_times_per_process[6] += (process_end - process_start).count();
 
             // Linear Filter
+            process_start = std::chrono::system_clock::now();
             kernel_linear(&src, kernel, kernel_size);
             imwrite(output_directory_name + images[j] + "/6.linear_filter.BMP" , src);
+            process_end = std::chrono::system_clock::now();
+            total_processing_times_per_process[7] += (process_end - process_start).count();
 
             src.release();
         }
@@ -107,9 +138,11 @@ int main(int argc, char **argv) {
 
 
     auto EVENT_END_program = std::chrono::system_clock::now();
-    std::chrono::duration<double> diff = EVENT_END_program - EVENT_START_program;
 
-    printf("[EVENT_PROGRAM]:%lf", diff);
+    printf("[EVENT_PROGRAM]:%lf\n", (double) (EVENT_END_program - EVENT_START_program).count());
+    for (int m = 0; m < 8; m++) {
+        printf("[EVENT_PROCESS_%d_TIME]:%lf\n", m, total_processing_times_per_process[m]);
+    }
 
     return 0;
 }
