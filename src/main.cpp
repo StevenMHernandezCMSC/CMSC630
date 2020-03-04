@@ -1,3 +1,4 @@
+#include <iostream>
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/core/ocl.hpp"
 #include "filter/noise_salt_and_pepper.cpp"
@@ -19,32 +20,30 @@ using namespace cv;
 int *histogram_buckets = new int[256];
 
 int main(int argc, char **argv) {
+    std::string filename = argv[1];
+    FileStorage fs(filename, FileStorage::READ);
+    fs.open(filename, FileStorage::READ);
+
+    FileNode filters = fs["filters"];
+
     auto EVENT_START_program = std::chrono::system_clock::now();
-    double total_processing_times_per_process[9];
-    for (int l = 0; l < 9; l++) {
+    double total_processing_times_per_process[filters.size() + 1];
+    for (int l = 0; l < filters.size(); l++) {
         total_processing_times_per_process[l] = 0.0;
     }
     auto process_start = std::chrono::system_clock::now();
     auto process_end = std::chrono::system_clock::now();
 
-
     std::string *classes;
-    std::string input_directory_name = argv[1];
-    std::string output_directory_name = argv[2];
+    std::string input_directory_name = fs["input"];
+    std::string output_directory_name = fs["output"];
     int num_classes = get_class_names(&classes, input_directory_name);
-
-    // TODO: Get user requested parameters
-    double salt_and_pepper_probability = 0.01;
-    double gassian_noise_standard_deviation = 5.0;
-    double **kernel;
-    int kernel_size = request_filter_values(&kernel);
-    int quantization_step_size = 4;
 
     // Load each class individually
     for (int i = 0; i < num_classes; i++) {
         std::string *images;
-        int num_images = get_images_by_class(&images, argv[1], classes[i]);
-        printf("Class [%d/%d]: %s\n", i+1, num_classes, classes[i].c_str());
+        int num_images = get_images_by_class(&images, input_directory_name, classes[i]);
+        printf("Class [%d/%d]: %s\n", i + 1, num_classes, classes[i].c_str());
 
         int *histogram_bucket_sums = new int[256];
         for (int k = 0; k < 256; k++) {
@@ -60,86 +59,91 @@ int main(int argc, char **argv) {
             // Load raw image
             process_start = std::chrono::system_clock::now();
             Mat src;
-            printf("Loading image [%d/%d]: %s\n", j+1, num_images, (input_directory_name + images[j]).c_str());
+            printf("Loading image [%d/%d]: %s\n", j + 1, num_images, (input_directory_name + images[j]).c_str());
             src = imread(input_directory_name + images[j]);
-            imwrite(output_directory_name + images[j] + "/0.original.BMP" , src);
+            imwrite(output_directory_name + images[j] + "/0.original.BMP", src);
             process_end = std::chrono::system_clock::now();
             total_processing_times_per_process[0] += (process_end - process_start).count();
 
-            // Grayscale
-            process_start = std::chrono::system_clock::now();
-            grayscale(&src);
-            imwrite(output_directory_name + images[j] + "/1.grayscale.BMP" , src);
-            process_end = std::chrono::system_clock::now();
-            total_processing_times_per_process[1] += (process_end - process_start).count();
+            // For each filter
+            FileNodeIterator it = filters.begin(), it_end = filters.end();
+            int filter_number = 1;
+            for (; it != it_end; ++it) {
+                process_start = std::chrono::system_clock::now();
+                std::string filter_name = (std::string) (*it)["name"];
+                if ("grayscale" == filter_name) {
+                    grayscale(&src);
+                } else if ("noise__salt_and_pepper" == filter_name) {
+                    noise_salt_and_pepper(&src, (*it)["probability"]);
+                } else if ("noise__gaussian" == filter_name) {
+                    noise_gaussian(&src, (*it)["variance"]);
+                } else if ("uniform_quantization" == filter_name) {
+                    uniform_quantization(&src, (*it)["step_size"]);
+                } else if ("non_uniform_quantization" == filter_name) {
+                    // TODO: build!
+                } else if ("linear_filter" == filter_name) {
+                    int **kernel = new int *[(*it)["kernel"].size()];
+                    for (int k = 0; k < (*it)["kernel"].size(); k++) {
+                        kernel[k] = new int[(*it)["kernel"][k].size()];
+                        for (int l = 0; l < (*it)["kernel"][k].size(); l++) {
+                            kernel[k][l] = (*it)["kernel"][k][l];
+                        }
+                    }
+                    int kernel_size = (*it)["kernel"].size();
 
-            // Add Salt and Pepper noise
-            process_start = std::chrono::system_clock::now();
-            noise_salt_and_pepper(&src, salt_and_pepper_probability);
-            imwrite(output_directory_name + images[j] + "/2.salt_and_pepper_noise.BMP" , src);
-            process_end = std::chrono::system_clock::now();
-            total_processing_times_per_process[2] += (process_end - process_start).count();
+                    kernel_linear(&src, kernel, kernel_size, (double) (*it)["scale"]);
+                } else if ("median_filter" == filter_name) {
+                    int **kernel = new int *[(*it)["kernel"].size()];
+                    for (int k = 0; k < (*it)["kernel"].size(); k++) {
+                        kernel[k] = new int[(*it)["kernel"][k].size()];
+                        for (int l = 0; l < (*it)["kernel"][k].size(); l++) {
+                            kernel[k][l] = (*it)["kernel"][k][l];
+                        }
+                    }
+                    int kernel_size = (*it)["kernel"].size();
 
-            // Add Gaussian noise
-            process_start = std::chrono::system_clock::now();
-            noise_gaussian(&src, gassian_noise_standard_deviation);
-            imwrite(output_directory_name + images[j] + "/3.gaussian_noise.BMP" , src);
-            process_end = std::chrono::system_clock::now();
-            total_processing_times_per_process[3] += (process_end - process_start).count();
+                    median_filter(&src, kernel, kernel_size);
+                } else if ("create_histogram" == filter_name) {
+                    Mat histogram;
+                    create_histogram(&src, &histogram_buckets);
+                    for (int k = 0; k < 256; k++) {
+                        histogram_bucket_sums[k] += histogram_buckets[k];
+                    }
 
-            // Create Histograms
-            process_start = std::chrono::system_clock::now();
-            Mat histogram1;
-            create_histogram(&src, &histogram_buckets);
-            create_histogram_mat(&histogram1, &histogram_buckets);
-            imwrite(output_directory_name + images[j] + "/histogram.3.gaussian_noise.bmp", histogram1);
-            histogram1.release();
-            for (int k = 0; k < 256; k++) {
-                histogram_bucket_sums[k] += histogram_buckets[k];
+                    create_histogram_mat(&histogram, &histogram_buckets);
+                    std::string file_name = "/histogram." + std::to_string(filter_number) + ".bmp";
+                    imwrite(output_directory_name + images[j] + file_name, histogram);
+                    histogram.release();
+                } else if ("histogram_equalization" == filter_name) {
+                    Mat histogram;
+                    apply_histogram_equalization(&src, &histogram_buckets);
+
+                    create_histogram_mat(&histogram, &histogram_buckets);
+                    std::string file_name = "/histogram." + std::to_string(filter_number) + ".equalization.bmp";
+                    imwrite(output_directory_name + images[j] + file_name, histogram);
+                    histogram.release();
+                } else {
+                    printf("Unknown filter-name: %s\nSkipping\n\n", filter_name.c_str());
+                    break;
+                }
+
+                if ("create_histogram" != filter_name) {
+                    std::string file_name = "/" + std::to_string(filter_number) + "." + filter_name + ".BMP";
+                    imwrite(output_directory_name + images[j] + file_name, src);
+                }
+                process_end = std::chrono::system_clock::now();
+                total_processing_times_per_process[filter_number] += (process_end - process_start).count();
+                filter_number++;
             }
-            process_end = std::chrono::system_clock::now();
-            total_processing_times_per_process[4] += (process_end - process_start).count();
-
-            // Histogram Equalization
-            process_start = std::chrono::system_clock::now();
-            Mat histogram2;
-            apply_histogram_equalization(&src, &histogram_buckets);
-            imwrite(output_directory_name + images[j] + "/4.histogram_equalization.BMP" , src);
-            create_histogram_mat(&histogram2, &histogram_buckets);
-            imwrite(output_directory_name + images[j] + "/histogram.4.histogram_equalization.bmp", histogram2);
-            histogram2.release();
-            process_end = std::chrono::system_clock::now();
-            total_processing_times_per_process[5] += (process_end - process_start).count();
-
-            // Uniform Quantization
-            process_start = std::chrono::system_clock::now();
-            uniform_quantization(&src, quantization_step_size);
-            imwrite(output_directory_name + images[j] + "/5.uniform_quantization.BMP" , src);
-            process_end = std::chrono::system_clock::now();
-            total_processing_times_per_process[6] += (process_end - process_start).count();
-
-            // Linear Filter
-            process_start = std::chrono::system_clock::now();
-            kernel_linear(&src, kernel, kernel_size);
-            imwrite(output_directory_name + images[j] + "/6.linear_filter.BMP" , src);
-            process_end = std::chrono::system_clock::now();
-            total_processing_times_per_process[7] += (process_end - process_start).count();
-
-            // Median Filter
-            process_start = std::chrono::system_clock::now();
-            median_filter(&src, kernel, kernel_size);
-            imwrite(output_directory_name + images[j] + "/7.median_filter.BMP" , src);
-            process_end = std::chrono::system_clock::now();
-            total_processing_times_per_process[7] += (process_end - process_start).count();
 
             src.release();
         }
 
         // Histogram Equalization
-        Mat histogram2;
-        create_histogram_mat(&histogram2, &histogram_bucket_sums);
-        imwrite(output_directory_name + classes[i] + ".AVERAGED_histogram.bmp", histogram2);
-        histogram2.release();
+        Mat histogram_final;
+        create_histogram_mat(&histogram_final, &histogram_bucket_sums);
+        imwrite(output_directory_name + classes[i] + ".AVERAGED_histogram.bmp", histogram_final);
+        histogram_final.release();
         delete[] histogram_bucket_sums;
         delete[] images;
     }

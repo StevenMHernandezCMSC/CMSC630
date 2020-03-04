@@ -1,0 +1,33 @@
+%YAML:1.0
+
+input: "/Users/steven/projects/school/MASTERS/CMSC630/data/raw/Cancerous cell smears/"
+output: "/Users/steven/projects/school/MASTERS/CMSC630/data/processed/"
+filters:
+    - name: grayscale
+    - name: noise__salt_and_pepper
+      probability: 0.01
+    - name: noise__gaussian
+      variance: 5.0
+    - name: create_histogram
+    - name: histogram_equalization
+    - name: uniform_quantization
+      step_size: 32
+    - name: non_uniform_quantization
+      thresholds:
+        - 0
+        - 100
+        - 150
+        - 200
+        - 255
+    - name: linear_filter
+      scale: 1
+      kernel:
+        - [0,1,0]
+        - [1,-4,1]
+        - [0,1,0]
+    - name: median_filter
+      kernel:
+        - [1,1,1]
+        - [1,5,1]
+        - [1,1,1]
+    - name: create_histogram

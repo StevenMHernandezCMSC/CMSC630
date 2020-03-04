@@ -2,7 +2,7 @@
 
 using namespace cv;
 
-void median_filter(Mat *src, double **kernel, int kernel_size) {
+void median_filter(Mat *src, int **kernel, int kernel_size) {
     Mat dst = Mat::ones(src->rows, src->cols, CV_8U);
 
     uint8_t mask_size = 3; // TODO: user should input
