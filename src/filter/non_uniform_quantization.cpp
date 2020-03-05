@@ -4,7 +4,7 @@ void non_uniform_quantization(Mat *src, const int *thresholds, const int *reprod
     int q[256];
 
     for (int i = 0; i < num_thresholds - 1; i++) {
-        for (int j = thresholds[i]; j < thresholds[i+1]; j++) {
+        for (int j = thresholds[i]; j < thresholds[i + 1]; j++) {
             q[j] = reproduction_levels[i];
         }
     }
