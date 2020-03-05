@@ -40,7 +40,6 @@ int main(int argc, char **argv) {
     std::string output_directory_name = fs["output"];
     int num_classes = get_class_names(&classes, input_directory_name);
 
-    bool can_create_final_histogram = false;
     double msqe = 0.0;
 
     // Load each class individually
@@ -65,7 +64,7 @@ int main(int argc, char **argv) {
             Mat src;
             printf("Loading image [%d/%d]: %s\n", j + 1, num_images, (input_directory_name + images[j]).c_str());
             src = imread(input_directory_name + images[j]);
-            imwrite(output_directory_name + images[j] + "/0.original.BMP", src);
+            imwrite(output_directory_name + images[j] + "/0.original.png", src);
             process_end = std::chrono::system_clock::now();
             total_processing_times_per_process[0] += (process_end - process_start).count();
 
@@ -115,52 +114,46 @@ int main(int argc, char **argv) {
                     int mask_size = (*it)["weights"].size();
 
                     median_filter(&src, weights, mask_size);
-                } else if ("create_histogram" == filter_name) {
-                    Mat histogram;
-                    create_histogram(&src, &histogram_buckets);
-                    for (int k = 0; k < 256; k++) {
-                        histogram_bucket_sums[k] += histogram_buckets[k];
-                    }
-
-                    create_histogram_mat(&histogram, &histogram_buckets);
-                    std::string file_name = "/histogram." + std::to_string(filter_number) + ".bmp";
-                    imwrite(output_directory_name + images[j] + file_name, histogram);
-                    histogram.release();
-                    can_create_final_histogram = true;
                 } else if ("histogram_equalization" == filter_name) {
                     Mat histogram;
                     apply_histogram_equalization(&src, &histogram_buckets);
-
-                    create_histogram_mat(&histogram, &histogram_buckets);
-                    std::string file_name = "/histogram." + std::to_string(filter_number) + ".equalization.bmp";
-                    imwrite(output_directory_name + images[j] + file_name, histogram);
-                    histogram.release();
                 } else {
                     printf("Unknown filter-name: %s\nSkipping\n\n", filter_name.c_str());
                     break;
                 }
 
-                if ("create_histogram" != filter_name) {
-                    std::string file_name = "/" + std::to_string(filter_number) + "." + filter_name + ".BMP";
-                    imwrite(output_directory_name + images[j] + file_name, src);
-                }
                 process_end = std::chrono::system_clock::now();
                 total_processing_times_per_process[filter_number] += (process_end - process_start).count();
+
+                /*
+                 * Create histogram after each action
+                 */
+                Mat histogram;
+                create_histogram(&src, &histogram_buckets);
+                for (int k = 0; k < 256; k++) {
+                    histogram_bucket_sums[k] += histogram_buckets[k];
+                }
+
+                create_histogram_mat(&histogram, &histogram_buckets);
+                std::string file_name = "/histogram." + std::to_string(filter_number) + "." + filter_name + ".png";
+                imwrite(output_directory_name + images[j] + file_name, histogram);
+                histogram.release();
+
+                std::string output_file_name = "/" + std::to_string(filter_number) + "." + filter_name + ".png";
+                imwrite(output_directory_name + images[j] + output_file_name, src);
                 filter_number++;
             }
 
             src.release();
         }
 
-        if (can_create_final_histogram) {
-            // Histogram Equalization
-            Mat histogram_final;
-            create_histogram_mat(&histogram_final, &histogram_bucket_sums);
-            imwrite(output_directory_name + classes[i] + ".AVERAGED_histogram.bmp", histogram_final);
-            histogram_final.release();
-            delete[] histogram_bucket_sums;
-            delete[] images;
-        }
+        // Histogram Equalization
+        Mat histogram_final;
+        create_histogram_mat(&histogram_final, &histogram_bucket_sums);
+        imwrite(output_directory_name + classes[i] + ".AVERAGED_histogram.png", histogram_final);
+        histogram_final.release();
+        delete[] histogram_bucket_sums;
+        delete[] images;
     }
 
     printf("MSQE: %lf\n", msqe);
