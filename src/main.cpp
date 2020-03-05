@@ -93,16 +93,16 @@ int main(int argc, char **argv) {
 
                     kernel_linear(&src, kernel, kernel_size, (double) (*it)["scale"]);
                 } else if ("median_filter" == filter_name) {
-                    int **kernel = new int *[(*it)["kernel"].size()];
-                    for (int k = 0; k < (*it)["kernel"].size(); k++) {
-                        kernel[k] = new int[(*it)["kernel"][k].size()];
-                        for (int l = 0; l < (*it)["kernel"][k].size(); l++) {
-                            kernel[k][l] = (*it)["kernel"][k][l];
+                    int **weights = new int *[(*it)["weights"].size()];
+                    for (int k = 0; k < (*it)["weights"].size(); k++) {
+                        weights[k] = new int[(*it)["weights"][k].size()];
+                        for (int l = 0; l < (*it)["weights"][k].size(); l++) {
+                            weights[k][l] = (*it)["weights"][k][l];
                         }
                     }
-                    int kernel_size = (*it)["kernel"].size();
+                    int mask_size = (*it)["weights"].size();
 
-                    median_filter(&src, kernel, kernel_size);
+                    median_filter(&src, weights, mask_size);
                 } else if ("create_histogram" == filter_name) {
                     Mat histogram;
                     create_histogram(&src, &histogram_buckets);
