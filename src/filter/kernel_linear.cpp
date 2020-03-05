@@ -2,24 +2,6 @@
 
 using namespace cv;
 
-int request_filter_values(double ***kernel) {
-    // TODO: request kernel-size from user.
-    int kernel_size = 3;
-
-    *kernel = new double*[kernel_size];
-
-    for (int i = 0; i < kernel_size; i++) {
-        (*kernel)[i] = new double[kernel_size];
-        for (int j = 0; j < kernel_size; j++) {
-            (*kernel)[i][j] = 1.0 / (double) (kernel_size * kernel_size);
-        }
-    }
-
-    // TODO: request values from user
-
-    return kernel_size;
-}
-
 uint8_t _apply_kernel(Mat *src, int **kernel, int kernel_size, int i, int j) {
     double final_value = 0.0;
     for (int k_i = 0; k_i < kernel_size; k_i++) {
