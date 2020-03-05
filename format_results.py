@@ -26,33 +26,10 @@ num_images = 500
 #
 
 print("""
-\\begin{tabular}{|l|r|}
+\\begin{tabular}{|l|r|r|}
 \\hline
-Pre-processing Step & Time(s)  \\\\
+Pre-processing Step & Time(s) & Time(ms)  \\\\
 \\hline
-""")
-
-for k in time_per_process.keys():
-    s = k.split(".")[1]
-    s = s.replace("_", " ")
-    s = s.title()
-    print("{} & {:.5} \\\\\n\\hline".format(s, time_per_process[k] / micros_per_millis / millis_per_second))
-
-print("\\hline\nTotal time & {:.5} \\\\\n\\hline".format(total_time / micros_per_millis / millis_per_second))
-
-print("""
-\\end{tabular}
-""")
-
-#
-# Average Time per image
-#
-
-
-print("""
-\\begin{tabular}{|l|r|}
-\\hline
-Pre-processing Step & Time(ms)  \\\\
 \\hline
 """)
 
@@ -60,9 +37,9 @@ for k in time_per_process.keys():
     s = k.split(".")[1]
     s = s.replace("_", " ")
     s = s.title()
-    print("{} & {:.5} \\\\\n\\hline".format(s, time_per_process[k] / micros_per_millis / num_images))
+    print("{} & {:.5} & {:.5} \\\\\n\\hline".format(s, time_per_process[k] / micros_per_millis / millis_per_second, time_per_process[k] / micros_per_millis / num_images))
 
-print("\\hline\nTotal time & {:.5} \\\\\n\\hline".format(total_time / micros_per_millis / num_images))
+print("\\hline\nTotal time & {:.5} & {:.5} \\\\\n\\hline".format(total_time / micros_per_millis / millis_per_second, total_time / micros_per_millis / num_images))
 
 print("""
 \\end{tabular}
