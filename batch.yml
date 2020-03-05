@@ -4,14 +4,19 @@ input: "/Users/steven/projects/school/MASTERS/CMSC630/data/raw/Cancerous cell sm
 output: "/Users/steven/projects/school/MASTERS/CMSC630/data/processed/"
 filters:
     - name: grayscale
-    - name: noise__salt_and_pepper
-      probability: 0.01
     - name: noise__gaussian
       variance: 5.0
+    - name: noise__salt_and_pepper
+      probability: 0.01
+    - name: median_filter
+      weights:
+        - [1,1,1]
+        - [1,1,1]
+        - [1,1,1]
     - name: create_histogram
     - name: histogram_equalization
     - name: uniform_quantization
-      step_size: 4
+      step_size: 16
     - name: non_uniform_quantization
       thresholds:
         - 0
@@ -29,10 +34,5 @@ filters:
       kernel:
         - [0,1,0]
         - [1,-4,1]
-        - [0,1,0]
-    - name: median_filter
-      weights:
-        - [0,1,0]
-        - [1,1,1]
         - [0,1,0]
     - name: create_histogram

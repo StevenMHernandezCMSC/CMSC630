@@ -40,6 +40,9 @@ int main(int argc, char **argv) {
     std::string output_directory_name = fs["output"];
     int num_classes = get_class_names(&classes, input_directory_name);
 
+    bool can_create_final_histogram = false;
+    double msqe = 0.0;
+
     // Load each class individually
     for (int i = 0; i < num_classes; i++) {
         std::string *images;
@@ -79,7 +82,7 @@ int main(int argc, char **argv) {
                 } else if ("noise__gaussian" == filter_name) {
                     noise_gaussian(&src, (*it)["variance"]);
                 } else if ("uniform_quantization" == filter_name) {
-                    uniform_quantization(&src, (*it)["step_size"]);
+                    msqe += uniform_quantization(&src, (*it)["step_size"]);
                 } else if ("non_uniform_quantization" == filter_name) {
                     int *thresholds = new int[(*it)["thresholds"].size()];
                     for (int k = 0; k < (*it)["thresholds"].size(); k++) {
@@ -123,6 +126,7 @@ int main(int argc, char **argv) {
                     std::string file_name = "/histogram." + std::to_string(filter_number) + ".bmp";
                     imwrite(output_directory_name + images[j] + file_name, histogram);
                     histogram.release();
+                    can_create_final_histogram = true;
                 } else if ("histogram_equalization" == filter_name) {
                     Mat histogram;
                     apply_histogram_equalization(&src, &histogram_buckets);
@@ -148,15 +152,18 @@ int main(int argc, char **argv) {
             src.release();
         }
 
-        // Histogram Equalization
-        Mat histogram_final;
-        create_histogram_mat(&histogram_final, &histogram_bucket_sums);
-        imwrite(output_directory_name + classes[i] + ".AVERAGED_histogram.bmp", histogram_final);
-        histogram_final.release();
-        delete[] histogram_bucket_sums;
-        delete[] images;
+        if (can_create_final_histogram) {
+            // Histogram Equalization
+            Mat histogram_final;
+            create_histogram_mat(&histogram_final, &histogram_bucket_sums);
+            imwrite(output_directory_name + classes[i] + ".AVERAGED_histogram.bmp", histogram_final);
+            histogram_final.release();
+            delete[] histogram_bucket_sums;
+            delete[] images;
+        }
     }
 
+    printf("MSQE: %lf\n", msqe);
 
     auto EVENT_END_program = std::chrono::system_clock::now();
 
