@@ -1,5 +1,3 @@
-#include "non_uniform_quantization.cpp"
-
 void uniform_quantization(Mat *src, int step_size) {
     Mat dst = Mat::ones(src->rows, src->cols, CV_8U);
 

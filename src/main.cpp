@@ -160,10 +160,17 @@ int main(int argc, char **argv) {
 
     auto EVENT_END_program = std::chrono::system_clock::now();
 
-    printf("[EVENT_PROGRAM]:%lf\n", (double) (EVENT_END_program - EVENT_START_program).count());
-    for (int m = 0; m < 8; m++) {
-        printf("[EVENT_PROCESS_%d_TIME]:%lf\n", m, total_processing_times_per_process[m]);
+    printf("total_time = %lf\n", (double) (EVENT_END_program - EVENT_START_program).count());
+
+    FileNodeIterator it = filters.begin(), it_end = filters.end();
+    printf("time_per_process = {\n");
+    printf("'0.load_image': %lf,\n", total_processing_times_per_process[0]);
+    int m = 1;
+    for (; it != it_end; ++it) {
+        printf("'%d.%s': %lf,\n", m, ((std::string) (*it)["name"]).c_str(), total_processing_times_per_process[m]);
+        m++;
     }
+    printf("}\n");
 
     return 0;
 }
