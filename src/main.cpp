@@ -7,6 +7,7 @@
 #include "filter/kernel_linear.cpp"
 #include "filter/median_filter.cpp"
 #include "filter/uniform_quantization.cpp"
+#include "filter/non_uniform_quantization.cpp"
 #include "histogram/create_histogram.cpp"
 #include "histogram/apply_histogram_equalization.cpp"
 #include "histogram/create_histogram_mat.cpp"
@@ -80,7 +81,15 @@ int main(int argc, char **argv) {
                 } else if ("uniform_quantization" == filter_name) {
                     uniform_quantization(&src, (*it)["step_size"]);
                 } else if ("non_uniform_quantization" == filter_name) {
-                    // TODO: build!
+                    int *thresholds = new int[(*it)["thresholds"].size()];
+                    for (int k = 0; k < (*it)["thresholds"].size(); k++) {
+                        thresholds[k] = (*it)["thresholds"][k];
+                    }
+                    int *reproduction_levels = new int[(*it)["reproduction_levels"].size()];
+                    for (int k = 0; k < (*it)["reproduction_levels"].size(); k++) {
+                        reproduction_levels[k] = (*it)["reproduction_levels"][k];
+                    }
+                    non_uniform_quantization(&src, thresholds, reproduction_levels, (*it)["thresholds"].size());
                 } else if ("linear_filter" == filter_name) {
                     int **kernel = new int *[(*it)["kernel"].size()];
                     for (int k = 0; k < (*it)["kernel"].size(); k++) {
