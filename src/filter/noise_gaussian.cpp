@@ -1,7 +1,4 @@
 #include <random>
-#include "opencv2/imgproc/imgproc.hpp"
-
-using namespace cv;
 
 
 void noise_gaussian(Mat *src, double standard_deviation) {

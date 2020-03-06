@@ -1,7 +1,3 @@
-#include "opencv2/imgproc/imgproc.hpp"
-
-using namespace cv;
-
 typedef Point3_<uint8_t> Pixel;
 
 void grayscale(Mat *src) {

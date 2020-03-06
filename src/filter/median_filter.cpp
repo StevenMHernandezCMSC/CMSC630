@@ -1,7 +1,4 @@
 #include <vector>
-#include "opencv2/imgproc/imgproc.hpp"
-
-using namespace cv;
 
 void median_filter(Mat *src, int **weights, int mask_size) {
     Mat dst = Mat::ones(src->rows, src->cols, CV_8U);

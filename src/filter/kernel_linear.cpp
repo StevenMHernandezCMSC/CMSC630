@@ -1,7 +1,3 @@
-#include "opencv2/imgproc/imgproc.hpp"
-
-using namespace cv;
-
 double _apply_kernel(Mat *src, int **kernel, int kernel_size, int i, int j) {
     double final_value = 0.0;
     for (int k_i = 0; k_i < kernel_size; k_i++) {
