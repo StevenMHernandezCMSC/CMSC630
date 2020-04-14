@@ -8,7 +8,8 @@
 #include "filter/median_filter.cpp"
 #include "filter/uniform_quantization.cpp"
 #include "filter/non_uniform_quantization.cpp"
-#include "filter/binary_theshold.cpp"
+#include "segmentation/binary_theshold.cpp"
+#include "segmentation/histogram_threshold.cpp"
 #include "segmentation/edge_detection/prewitt.cpp"
 #include "segmentation/edge_detection/sobel.cpp"
 #include "segmentation/edge_detection/improved_sobel.cpp"
@@ -131,6 +132,8 @@ int main(int argc, char **argv) {
                     improved_sobel(&src);
                 } else if ("binary_threshold" == filter_name) { // TODO: probably remove
                     binary_theshold(&src, (*it)["threshold"]);
+                } else if ("histogram_threshold" == filter_name) {
+                    histogram_threshold(&src, &histogram_buckets);
                 } else if ("dilation" == filter_name) {
                     dilation(&src);
                 } else if ("erosion" == filter_name) {
