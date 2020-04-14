@@ -8,9 +8,12 @@
 #include "filter/median_filter.cpp"
 #include "filter/uniform_quantization.cpp"
 #include "filter/non_uniform_quantization.cpp"
+#include "filter/binary_theshold.cpp"
 #include "segmentation/edge_detection/prewitt.cpp"
 #include "segmentation/edge_detection/sobel.cpp"
 #include "segmentation/edge_detection/improved_sobel.cpp"
+#include "morphological_filter/erosion.cpp"
+#include "morphological_filter/dilation.cpp"
 #include "histogram/create_histogram.cpp"
 #include "histogram/apply_histogram_equalization.cpp"
 #include "histogram/create_histogram_mat.cpp"
@@ -126,6 +129,12 @@ int main(int argc, char **argv) {
                     sobel(&src);
                 } else if ("improved_sobel" == filter_name) {
                     improved_sobel(&src);
+                } else if ("binary_threshold" == filter_name) { // TODO: probably remove
+                    binary_theshold(&src, (*it)["threshold"]);
+                } else if ("dilation" == filter_name) {
+                    dilation(&src);
+                } else if ("erosion" == filter_name) {
+                    erosion(&src);
                 } else {
                     printf("Unknown filter-name: %s\nSkipping\n\n", filter_name.c_str());
                     break;

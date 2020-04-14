@@ -4,6 +4,10 @@ input: "../data/raw/Cancerous cell smears/"
 output: "../data/processed/"
 filters:
     - name: grayscale
-#    - name: prewitt
-#    - name: sobel
-    - name: improved_sobel
+    - name: binary_threshold
+      threshold: 128
+    - name: dilation
+    - name: erosion
+  #    - name: prewitt
+  #    - name: sobel
+  #    - name: improved_sobel
