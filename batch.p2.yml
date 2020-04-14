@@ -1,0 +1,9 @@
+%YAML:1.0
+
+input: "../data/raw/Cancerous cell smears/"
+output: "../data/processed/"
+filters:
+    - name: grayscale
+#    - name: prewitt
+#    - name: sobel
+    - name: improved_sobel

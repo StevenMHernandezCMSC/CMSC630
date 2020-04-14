@@ -1,7 +1,7 @@
 %YAML:1.0
 
-input: "./data/raw/Cancerous cell smears/"
-output: "./data/processed/"
+input: "../data/raw/Cancerous cell smears/"
+output: "../data/processed/"
 filters:
     - name: grayscale
     - name: noise__gaussian

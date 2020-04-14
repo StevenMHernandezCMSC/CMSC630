@@ -8,6 +8,9 @@
 #include "filter/median_filter.cpp"
 #include "filter/uniform_quantization.cpp"
 #include "filter/non_uniform_quantization.cpp"
+#include "segmentation/edge_detection/prewitt.cpp"
+#include "segmentation/edge_detection/sobel.cpp"
+#include "segmentation/edge_detection/improved_sobel.cpp"
 #include "histogram/create_histogram.cpp"
 #include "histogram/apply_histogram_equalization.cpp"
 #include "histogram/create_histogram_mat.cpp"
@@ -117,6 +120,12 @@ int main(int argc, char **argv) {
                 } else if ("histogram_equalization" == filter_name) {
                     Mat histogram;
                     apply_histogram_equalization(&src, &histogram_buckets);
+                } else if ("prewitt" == filter_name) {
+                    prewitt(&src);
+                } else if ("sobel" == filter_name) {
+                    sobel(&src);
+                } else if ("improved_sobel" == filter_name) {
+                    improved_sobel(&src);
                 } else {
                     printf("Unknown filter-name: %s\nSkipping\n\n", filter_name.c_str());
                     break;
