@@ -23,5 +23,5 @@ The file `batch.yml` contains the list of input and output directories and filte
 ## Run
 
 ```
-./cmake-build-debug/cmsc603 ./batch.yml
+./cmake-build-debug/cmsc603 ./batch.p2.yml
 ```
