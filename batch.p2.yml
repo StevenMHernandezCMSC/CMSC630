@@ -4,18 +4,6 @@ input: "../data/raw/Cancerous cell smears/"
 output: "../data/processed/"
 filters:
   - name: grayscale
-#  - name: median_filter
-#    weights:
-#      - [1,1,1]
-#      - [1,1,1]
-#      - [1,1,1]
-#  - name: histogram_equalization
-#  - name: linear_filter
-#    scale:  9
-#    kernel:
-#      - [1,1,1]
-#      - [1,1,1]
-#      - [1,1,1]
 #  - name: prewitt
 #  - name: sobel
 #  - name: improved_sobel
@@ -23,19 +11,5 @@ filters:
 #  - name: histogram_k_means_clustering
   - name: dilation
   - name: dilation
-  - name: dilation
-  - name: dilation
-  - name: dilation
-  - name: dilation
-  - name: dilation
-  - name: dilation
   - name: erosion
   - name: erosion
-  - name: erosion
-  - name: erosion
-  - name: erosion
-  - name: erosion
-  - name: erosion
-  - name: erosion
-#  #    - name: binary_threshold
-#  #        threshold: 128
