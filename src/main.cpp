@@ -9,7 +9,7 @@
 #include "filter/uniform_quantization.cpp"
 #include "filter/non_uniform_quantization.cpp"
 #include "segmentation/binary_theshold.cpp"
-#include "segmentation/histogram_threshold.cpp"
+#include "segmentation/histogram_threshold_calculate.cpp"
 #include "segmentation/edge_detection/prewitt.cpp"
 #include "segmentation/edge_detection/sobel.cpp"
 #include "segmentation/edge_detection/improved_sobel.cpp"
@@ -133,7 +133,17 @@ int main(int argc, char **argv) {
                 } else if ("binary_threshold" == filter_name) { // TODO: probably remove
                     binary_theshold(&src, (*it)["threshold"]);
                 } else if ("histogram_threshold" == filter_name) {
-                    histogram_threshold(&src, &histogram_buckets);
+                    // Determine threshold
+                    int threshold = histogram_threshold_calculate(&src, &histogram_buckets);
+                    // Write original histogram with selected threshold
+                    Mat histogram;
+                    create_histogram(&src, &histogram_buckets);
+                    create_histogram_mat(&histogram, &histogram_buckets, threshold);
+                    std::string file_name = "/histogram." + std::to_string(filter_number) + ".0." + filter_name + ".png";
+                    imwrite(output_directory_name + images[j] + file_name, histogram);
+                    histogram.release();
+                    // Apply threshold
+                    binary_theshold(&src, threshold);
                 } else if ("dilation" == filter_name) {
                     dilation(&src);
                 } else if ("erosion" == filter_name) {
