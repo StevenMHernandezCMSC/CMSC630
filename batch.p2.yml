@@ -4,7 +4,8 @@ input: "../data/raw/Cancerous cell smears/"
 output: "../data/processed/"
 filters:
     - name: grayscale
-    - name: histogram_threshold
+#    - name: histogram_threshold
+    - name: histogram_k_means_clustering
     - name: dilation
     - name: erosion
   #    - name: binary_threshold
