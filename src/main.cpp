@@ -189,6 +189,7 @@ int main(int argc, char **argv) {
             }
 
             src.release();
+            break;
         }
 
         // Histogram Equalization

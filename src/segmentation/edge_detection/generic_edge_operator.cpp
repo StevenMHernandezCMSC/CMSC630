@@ -37,7 +37,6 @@ void generic_edge_operator(Mat *src, int ***kernel1, int ***kernel2, int kernel_
     for (int i = 0; i < src->rows; i++) {
         for (int j = 0; j < src->cols; j++) {
             double magnitude = sqrt(pow((double)dst1.at<int16_t>(i, j),2.0) + pow((double)dst2.at<int16_t>(i, j),2.0));
-            printf("%i<->%i = %lf\n", dst1.at<int16_t>(i, j), dst2.at<int16_t>(i, j), magnitude);
             dst_magnitude.at<uint8_t>(i, j) = (int) max(0.0, min(255.0, magnitude));
         }
     }
