@@ -215,18 +215,18 @@ int main(int argc, char **argv) {
             for (; it_fe != it_end_fe; ++it_fe) {
                 process_start = std::chrono::system_clock::now();
                 std::string feature_name = (std::string) (*it_fe)["name"];
-                int feature_value = -1;
+                double feature_value = -1.0;
 
                 if ("area" == feature_name) {
-                    feature_value = calculate_area(&histogram_buckets);
+                    feature_value = (double) calculate_area(&histogram_buckets);
                 } else if ("num_cells" == feature_name) {
-                    feature_value = number_of_cells(&src);
+                    feature_value = (double) number_of_cells(&src);
                 } else if ("average_cell_size" == feature_name) {
-                    feature_value = average_cell_size(&src);
+                    feature_value = (double) average_cell_size(&src);
                 } else if ("largest_cell" == feature_name) {
-                    feature_value = largest_cell_size(&src);
+                    feature_value = (double) largest_cell_size(&src);
                 } else if ("smallest_cell" == feature_name) {
-                    feature_value = smallest_cell_size(&src);
+                    feature_value = (double) smallest_cell_size(&src);
                 } else {
                     printf("Unknown feature-name: %s\n\n", feature_name.c_str());
                 }

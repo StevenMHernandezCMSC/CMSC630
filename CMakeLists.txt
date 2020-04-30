@@ -15,6 +15,9 @@ find_package(Boost 1.72 REQUIRED COMPONENTS filesystem regex)
 #endif()
 
 add_executable(cmsc603 src/main.cpp)
-
 target_link_libraries(cmsc603 ${OpenCV_LIBS})
 target_link_libraries(cmsc603 ${Boost_LIBRARIES})
+
+add_executable(cmsc603KNN src/main_knn.cpp)
+target_link_libraries(cmsc603KNN ${OpenCV_LIBS})
+target_link_libraries(cmsc603KNN ${Boost_LIBRARIES})
