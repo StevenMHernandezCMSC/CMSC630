@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/core/ocl.hpp"
 #include "filter/noise_salt_and_pepper.cpp"
@@ -21,6 +22,11 @@
 #include "histogram/create_histogram_mat.cpp"
 #include "dataset/get_class_names.cpp"
 #include "dataset/get_images_by_class.cpp"
+#include "feature_extraction/calculate_area.cpp"
+#include "feature_extraction/number_of_cells.h"
+#include "feature_extraction/average_cell_size.h"
+#include "feature_extraction/smallest_cell_size.h"
+#include "feature_extraction/largest_cell_size.h"
 
 using namespace std::chrono;
 
@@ -34,11 +40,16 @@ int main(int argc, char **argv) {
     fs.open(filename, FileStorage::READ);
 
     FileNode filters = fs["filters"];
+    FileNode features = fs["features"];
 
     auto EVENT_START_program = std::chrono::system_clock::now();
-    double total_processing_times_per_process[filters.size() + 1];
-    for (int l = 0; l < filters.size(); l++) {
+    double total_processing_times_per_process[filters.size() + 1]; // Plus one for the load_image process (not defined in batch.yml)
+    double total_processing_times_per_feature_extraction_process[features.size()];
+    for (int l = 0; l < filters.size() + 1; l++) {
         total_processing_times_per_process[l] = 0.0;
+    }
+    for (int l = 0; l < features.size(); l++) {
+        total_processing_times_per_feature_extraction_process[l] = 0.0;
     }
     auto process_start = std::chrono::system_clock::now();
     auto process_end = std::chrono::system_clock::now();
@@ -47,6 +58,17 @@ int main(int argc, char **argv) {
     std::string input_directory_name = fs["input"];
     std::string output_directory_name = fs["output"];
     int num_classes = get_class_names(&classes, input_directory_name);
+
+    // Add header to the output csv
+    std::ofstream f;
+    f.open (output_directory_name + "output.csv");
+    FileNodeIterator it_fe = features.begin(), it_end_fe = features.end();
+    for (; it_fe != it_end_fe; ++it_fe) {
+        process_start = std::chrono::system_clock::now();
+        std::string feature_name = (std::string) (*it_fe)["name"];
+        f << feature_name << ",";
+    }
+    f << "class\n";
 
     double msqe = 0.0;
 
@@ -188,8 +210,36 @@ int main(int argc, char **argv) {
                 filter_number++;
             }
 
+            it_fe = features.begin(), it_end_fe = features.end();
+            int feature_number = 1;
+            for (; it_fe != it_end_fe; ++it_fe) {
+                process_start = std::chrono::system_clock::now();
+                std::string feature_name = (std::string) (*it_fe)["name"];
+                int feature_value = -1;
+
+                if ("area" == feature_name) {
+                    feature_value = calculate_area(&histogram_buckets);
+                } else if ("num_cells" == feature_name) {
+                    feature_value = number_of_cells(&src);
+                } else if ("average_cell_size" == feature_name) {
+                    feature_value = average_cell_size(&src);
+                } else if ("largest_cell" == feature_name) {
+                    feature_value = largest_cell_size(&src);
+                } else if ("smallest_cell" == feature_name) {
+                    feature_value = smallest_cell_size(&src);
+                } else {
+                    printf("Unknown feature-name: %s\n\n", feature_name.c_str());
+                }
+
+                f << feature_value << ",";
+
+                process_end = std::chrono::system_clock::now();
+                total_processing_times_per_feature_extraction_process[feature_number] += (process_end - process_start).count();
+            }
+            f << i << "\n";
+            f.flush();
+
             src.release();
-            break;
         }
 
         // Histogram Equalization
@@ -207,7 +257,7 @@ int main(int argc, char **argv) {
 
     printf("total_time = %lf\n", (double) (EVENT_END_program - EVENT_START_program).count());
 
-    FileNodeIterator it = filters.begin(), it_end = filters.end();
+    FileNodeIterator it = features.begin(), it_end = features.end();
     printf("time_per_process = {\n");
     printf("'0.load_image': %lf,\n", total_processing_times_per_process[0]);
     int m = 1;

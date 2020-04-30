@@ -21,7 +21,7 @@ void dilation(Mat *src) {
                     if (!valid) {
                         int x_coord = i + m;
                         int y_coord = j + n;
-                        if (0 <= x_coord && x_coord <= src->rows && 0 <= y_coord && y_coord <= src->cols) {
+                        if (0 <= x_coord && x_coord < src->rows && 0 <= y_coord && y_coord < src->cols) {
                             if (structuring_element[m + origin_offset][n + origin_offset] &&
                                 src->at<uint8_t>(x_coord, y_coord)) {
                                 valid = true;

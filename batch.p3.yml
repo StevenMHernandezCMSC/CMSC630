@@ -1,0 +1,17 @@
+%YAML:1.0
+
+input: "../data/raw/Cancerous cell smears/"
+output: "../data/processed/"
+filters:
+  - name: grayscale
+  - name: histogram_threshold
+  - name: dilation
+  - name: dilation
+  - name: erosion
+  - name: erosion
+features:
+  - name: area
+  - name: num_cells
+  - name: largest_cell
+  - name: smallest_cell
+  - name: average_cell_size
