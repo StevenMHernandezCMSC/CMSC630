@@ -15,3 +15,6 @@ features:
   - name: largest_cell
   - name: smallest_cell
   - name: average_cell_size
+classifier:
+  - name: knn
+    k: 6

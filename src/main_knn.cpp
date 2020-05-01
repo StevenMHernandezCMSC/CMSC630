@@ -2,6 +2,7 @@
 #include <algorithm>
 #include "opencv2/core/ocl.hpp"
 #include "dataset/load_features_csv.cpp"
+#include "classification/knn.cpp"
 
 using namespace cv;
 
@@ -12,6 +13,10 @@ int main(int argc, char **argv) {
 
     std::string input_directory_name = fs["input"];
     std::string output_directory_name = fs["output"];
+
+    FileNode classifier = fs["classifier"];
+    FileNodeIterator it_fe = classifier.begin();
+    int k = (int) (*it_fe)["k"];
 
     double **features_matrix;
     int *classes_matrix;
@@ -46,9 +51,16 @@ int main(int argc, char **argv) {
     for (int i = 0; i < ms.num_rows; i++) {
         indices.push_back(i);
     }
+    double accuracy_sum = 0.0;
     for (int f = 0; f < num_folds; f++) {
         // Shift datasets for next fold.
-        std::rotate(indices.begin(), indices.begin() + (int) ((double) indices.size() / (double) num_folds), indices.end());
-        // TODO: k-NN train/predict
+        int fold_length = (int) ((double) indices.size() / (double) num_folds);
+        std::rotate(indices.begin(), indices.begin() + fold_length, indices.end());
+
+        double accuracy = knn(k, features_matrix, classes_matrix, indices, 0, indices.size() - fold_length, indices.size(), ms.num_features);
+        printf("Accuracy: %lf\n", accuracy);
+        accuracy_sum += accuracy;
     }
+
+    printf("Final Accuracy: %lf\n", accuracy_sum / num_folds);
 }
